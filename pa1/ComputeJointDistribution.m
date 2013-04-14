@@ -24,8 +24,16 @@ function Joint = ComputeJointDistribution(F)
 % You may assume that you are given legal CPDs so no input checking is required.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-Joint = struct('var', [], 'card', [], 'val', []); % Returns empty factor. Change this.
+
+Joint = F;
+while length(Joint) > 1
+  left = Joint(1:2:end);
+  right = Joint(2:2:end);
+  last = left(length(right) + 1:end);
+  left = left(1:length(right));
+
+  Joint = [arrayfun(@FactorProduct, left, right), last];
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
