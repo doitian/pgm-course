@@ -38,7 +38,7 @@ indxB = AssignmentToIndex(assignments(:, mapB), B.card);
 % YOUR CODE HERE
 % Correctly populate the factor values of B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mask = not(repmat(indxB, 1, length(B.val)) .- repmat(1:length(B.val), length(indxB), 1));
+mask = repmat(indxB, 1, length(B.val)) == 1:length(B.val);
 B.val = A.val * mask;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
