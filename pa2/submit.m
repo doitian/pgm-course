@@ -172,7 +172,7 @@ end
 
 % specifies which parts are test parts
 function result = isTest(partId)
-  if (bitand(partId, 0)) 
+  if (mod(partId, 2) == 0) 
     result = true;
   else
     result = false;
@@ -418,12 +418,12 @@ end
 
 %%% Remove -staging when you deploy!
 function url = challenge_url()
-  url = 'http://class.coursera.org/pgm-2012-002/assignment/challenge';
+  url = 'http://class.coursera.org/pgm-003/assignment/challenge';
 end
 
 %%% Remove -staging when you deploy!
 function url = submit_url()
-  url = 'http://class.coursera.org/pgm-2012-002/assignment/submit';
+  url = 'http://class.coursera.org/pgm-003/assignment/submit';
 end
 
 % ========================= CHALLENGE HELPERS =========================
