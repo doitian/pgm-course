@@ -38,8 +38,6 @@ numAlleles = length(alleleFreqs);
 % mapping using generateAlleleGenotypeMappers(numAlleles). (A genotype 
 % consists of 2 alleles.)
 
-[allelesToGenotypes, genotypesToAlleles] = generateAlleleGenotypeMappers(numAlleles);
-
 % One or both of these matrices might be useful.
 %
 %   1.  allelesToGenotypes: n x n matrix that maps pairs of allele IDs to 
@@ -57,9 +55,14 @@ numAlleles = length(alleleFreqs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Fill in genotypeFactor.var.  This should be a 1-D row vector.
+genotypeFactor.var = [genotypeVar];
 % Fill in genotypeFactor.card.  This should be a 1-D row vector.
+genotypeFactor.card = [numAlleles * (numAlleles - 1) / 2 + numAlleles];
 
-genotypeFactor.val = zeros(1, prod(genotypeFactor.card));
-% Replace the zeros in genotypeFactor.val with the correct values.
+products = alleleFreqs * alleleFreqs';
+products = products .* 2 .- diag(diag(products));
+map = find(tril(ones(numAlleles, numAlleles)));
+
+genotypeFactor.val = products(:)(map)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
