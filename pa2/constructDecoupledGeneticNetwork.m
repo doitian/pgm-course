@@ -69,9 +69,6 @@ numPeople = length(pedigree.names);
 % not matter.
 factorList(3*numPeople) = struct('var', [], 'card', [], 'val', []);
 
-% Initialize factors
-factorList(3*numPeople) = struct('var', [], 'card', [], 'val', []);
-
 numAlleles = length(alleleFreqs); % Number of alleles
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,4 +79,23 @@ numAlleles = length(alleleFreqs); % Number of alleles
 % 2*numPeople+1 - 3*numPeople: phenotype variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
+for person = 1:numPeople
+  geneCopyVarOne = person;
+  geneCopyVarTwo = person + numPeople;
+  phenotypeVar = person + numPeople + numPeople;
+
+  parents = pedigree.parents(person, :);
+  if any(parents)
+    # parentX is parent's first copy, and parentX + numAlleles is the parent's second copy
+    factorList(geneCopyVarOne) = childCopyGivenParentalsFactor(numAlleles, geneCopyVarOne, parents(1), parents(1) + numPeople);
+    factorList(geneCopyVarTwo) = childCopyGivenParentalsFactor(numAlleles, geneCopyVarTwo, parents(2), parents(2) + numPeople);
+  else
+    factorList(geneCopyVarOne) = childCopyGivenFreqsFactor(alleleFreqs, geneCopyVarOne);
+    factorList(geneCopyVarTwo) = childCopyGivenFreqsFactor(alleleFreqs, geneCopyVarTwo);
+  endif
+
+  factorList(phenotypeVar) = phenotypeGivenCopiesFactor(alphaList, numAlleles, geneCopyVarOne, geneCopyVarTwo, phenotypeVar);
+endfor
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+endfunction
