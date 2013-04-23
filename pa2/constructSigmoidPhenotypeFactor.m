@@ -46,9 +46,38 @@ phenotypeFactor = struct('var', [], 'card', [], 'val', []);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
 % Fill in phenotypeFactor.var.  This should be a 1-D row vector.
+phenotypeFactor.var = [phenotypeVar, geneCopyVarOneList', geneCopyVarTwoList'];
 % Fill in phenotypeFactor.card.  This should be a 1-D row vector.
+numAlleles = cellfun('length', alleleWeights);
+phenotypeFactor.card = [2, numAlleles, numAlleles];
 
-phenotypeFactor.val = zeros(1, prod(phenotypeFactor.card));
-% Replace the zeros in phentoypeFactor.val with the correct values.
+% Build subscripts, 
+dims = [numAlleles, numAlleles];
+weights = [1, cumprod(dims(1:end-1))];
+numCombinations = prod(dims);
+
+# Same to ind2sub but return all columns
+subs = 1 .+ mod(
+  floor(
+    repmat((1:numCombinations)-1, length(dims), 1) ./
+    repmat(weights', 1, numCombinations)
+  ),
+  repmat(dims', 1, numCombinations)
+);
+
+# Calculate probability that phenotypeVar assignemnt is 1, a.k.a, having the trailt
+numGenes = length(alleleWeights);
+havingTrait = zeros(1, size(subs, 2));
+for i = 1:length(havingTrait)
+  sub = subs(:, i)';
+  for gene = 1:numGenes
+    havingTrait(i) += sum(alleleWeights{gene}([sub(gene), sub(gene + numGenes)]));
+  endfor
+  havingTrait(i) = computeSigmoid(havingTrait(i));
+endfor
+
+havingNoTrait = 1 - havingTrait;
+
+phenotypeFactor.val = [havingTrait; havingNoTrait](:)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
