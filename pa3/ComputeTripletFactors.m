@@ -27,6 +27,16 @@ end
 
 factors = repmat(struct('var', [], 'card', [], 'val', []), n - 2, 1);
 
+subs = reshape([tripletList.chars], 3, length(tripletList));
+indices = subs(1, :) + (subs(2, :) * K - K) + (subs(3, :) * K * K - K * K);
+val = ones(K * K * K, 1);
+val(indices) = [tripletList.factorVal];
+
 % Your code here:
+for i = 1:(n-2)
+  factors(i).var = [i, i + 1, i + 2];
+  factors(i).card = [K, K, K];
+  factors(i).val = val;
+end
 
 end
