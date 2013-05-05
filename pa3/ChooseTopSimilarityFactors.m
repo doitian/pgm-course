@@ -23,7 +23,14 @@ if (length(allFactors) <= F)
 end
 
 % Your code here:
-factors = allFactors; %%% REMOVE THIS LINE
+
+% sort by first val
+
+[similarites, indices] =  sort([allFactors.val](1, :), "descend");
+
+indices = sort(indices(1:F));
+
+factors = allFactors(indices);
 
 end
 
