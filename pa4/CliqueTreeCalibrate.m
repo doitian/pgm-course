@@ -37,6 +37,21 @@ MESSAGES = repmat(struct('var', [], 'card', [], 'val', []), N, N);
 %
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+[i, j] = GetNextCliques(P, MESSAGES);
+while i > 0
+  message = P.cliqueList(i);
+  for incomming = find(P.edges(:, i))'
+    if incomming != j
+      message = FactorProduct(message, MESSAGES(incomming, i));
+    end
+  end
+  irrelevant = setdiff(P.cliqueList(i).var, P.cliqueList(j).var);
+  message = FactorMarginalization(message, irrelevant);
+  message.val = message.val ./ sum(message.val);
+  MESSAGES(i, j) = message;
+
+  [i, j] = GetNextCliques(P, MESSAGES);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
@@ -45,6 +60,10 @@ MESSAGES = repmat(struct('var', [], 'card', [], 'val', []), N, N);
 % Compute the final potentials for the cliques and place them in P.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+for i = 1:N
+  for incomming = find(P.edges(:, i))'
+    P.cliqueList(i) = FactorProduct(P.cliqueList(i), MESSAGES(incomming, i));
+  end
+end
 
 return
