@@ -25,14 +25,39 @@ N = length(C.nodes);
 
 % initialize cluster potentials 
 P.cliqueList = repmat(struct('var', [], 'card', [], 'val', []), N, 1);
-P.edges = zeros(N);
+P.edges = C.edges;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 %
 % First, compute an assignment of factors from factorList to cliques. 
 % Then use that assignment to initialize the cliques in cliqueList to 
-% their initial potentials. 
+% their initial potentials.
+
+% Get all vars
+[vars, index] = unique([C.factorList.var]);
+allCards = [C.factorList.card](index);
+cards = ones(1, vars(end));
+for i = 1:length(vars)
+  cards(vars(i)) = allCards(i);
+end
+
+% Construct unit factor
+for i = 1:N
+  P.cliqueList(i).var = C.nodes{i};
+  P.cliqueList(i).card = cards(C.nodes{i});
+  P.cliqueList(i).val = ones(1, prod(P.cliqueList(i).card));
+end
+
+for i = 1:length(C.factorList)
+  # find a clique
+  for j = 1:N
+    if all(ismember(C.factorList(i).var, C.nodes{j}));
+      P.cliqueList(j) = FactorProduct(P.cliqueList(j), C.factorList(i));
+      break
+    end
+  end
+end
 
 % C.nodes is a list of cliques.
 % So in your code, you should start with: P.cliqueList(i).var = C.nodes{i};
