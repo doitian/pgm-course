@@ -37,13 +37,16 @@ end;
 
 % initialization
 % you should set them to the correct values in your code
-B.card = [];
-B.val = [];
+B.card = A.card(mapB);
+B.val = zeros(1, prod(B.card));
+
+assignments = IndexToAssignment(1:length(A.val), A.card);
+indxB = AssignmentToIndex(assignments(:, mapB), B.card);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 % Correctly set up and populate the factor values of B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+B.val = accumarray(indxB, A.val, [], @max)';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
