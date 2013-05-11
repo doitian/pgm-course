@@ -14,3 +14,18 @@ function test_sum_product()
   end
 endfunction
 %!test test_sum_product()
+
+function test_max_sum()
+  load("PA4Sample", "MaxSumCalibrate")
+  result = CliqueTreeCalibrate(MaxSumCalibrate.INPUT, 1);
+  assert(result.edges, MaxSumCalibrate.RESULT.edges)
+  assert(length(result.cliqueList), length(MaxSumCalibrate.RESULT.cliqueList))
+
+  for i = 1:length(MaxSumCalibrate.RESULT.cliqueList)
+    ## clique = MaxSumCalibrate.RESULT.cliqueList(i)
+    assert(result.cliqueList(i).var, MaxSumCalibrate.RESULT.cliqueList(i).var)
+    assert(result.cliqueList(i).card, MaxSumCalibrate.RESULT.cliqueList(i).card)
+    assert(result.cliqueList(i).val, MaxSumCalibrate.RESULT.cliqueList(i).val, 0.000001)
+  end
+endfunction
+%!test test_max_sum()
