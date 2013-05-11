@@ -34,6 +34,27 @@ j = 0;
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+[cols, rows] = find(P.edges');
 
+for e = 1:length(rows)
+  sender = rows(e);
+  receiver = cols(e);
+
+  if isempty(messages(sender, receiver).var)
+    incommingEdges = setdiff(find(P.edges(:, sender)), [receiver]);
+    incommingMessages = messages(incommingEdges, sender);
+    waitingCount = length(incommingMessages);
+    for m = 1:length(incommingMessages)
+      if ~isempty(incommingMessages(m).var)
+        waitingCount -=1;
+      end
+    end
+    if waitingCount == 0
+      i = sender;
+      j = receiver;
+      break
+    end
+  end
+end
 
 return;
