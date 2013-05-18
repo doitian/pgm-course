@@ -21,8 +21,6 @@
 % Copyright (C) Daphne Koller, Stanford University, 2012
 
 function P = CreateClusterGraph(F, Evidence)
-P.clusterList = [];
-P.edges = [];
 for j = 1:length(Evidence),
     if (Evidence(j) > 0),
         F = ObserveEvidence(F, [j, Evidence(j)]);
@@ -34,7 +32,26 @@ end;
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+m = length(F);
+P.edges = zeros(m, m);
 
+P.clusterList = repmat(struct("var", [], "card", [], "val", []), 1, m);
+
+for i = 1:m
+  P.clusterList(i).var = F(i).var;
+  P.clusterList(i).card = F(i).card;
+  P.clusterList(i).val = F(i).val;
+
+  # find edge
+  if length(F(i).var) == 1
+    var = F(i).var;
+    for j = i+1:m
+      if ismember(var, F(j).var)
+        P.edges(i, j) = P.edges(j, i) = 1;
+      end
+    end
+  end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
