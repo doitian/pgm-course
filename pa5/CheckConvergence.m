@@ -15,7 +15,6 @@
 % Copyright (C) Daphne Koller, Stanford University, 2012
 
 function converged = CheckConvergence(mNew, mOld);
-converged = true;
 thresh = 1.0e-6;
 %converged should be 1 if converged, 0 otherwise.
 
@@ -24,7 +23,7 @@ thresh = 1.0e-6;
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+converged = all(abs([mNew.val] - [mOld.val]) <= thresh);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
