@@ -54,6 +54,21 @@ LogBS = zeros(1, d);
 % Also you should have only ONE for-loop, as for-loops are VERY slow in matlab
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+n = length(A);
+
+factorIndex = unique([G.var2factors{V}]);
+factors = F(factorIndex);
+
+assignments = repmat(A, d, 1);
+assignments(:, V) = repmat([1:d]', 1, length(V));
+
+for i = 1:d
+  assignment = A;
+  assignment(V) = i;
+
+  LogBS(i) = sum(log(arrayfun(@(f)(GetValueOfAssignment(f, assignment, 1:n)), factors)));
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Re-normalize to prevent underflow when you move back to probability space
