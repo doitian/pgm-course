@@ -23,5 +23,10 @@ for i = 1:length(G.names)
     % be sure that the arguments you pass to it meet that criteria
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    LogBS = BlockLogDistribution(i, G, F, A);
+    distribution = e .^ LogBS;
+    distribution ./= sum(distribution);
+    A(i) = randsample(1:G.card(i), 1, false, distribution);
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
