@@ -47,6 +47,7 @@ if variant == 1
     % Specify the log of the distribution (LogR) from 
     % which a new label for Y is selected for variant 1 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    LogR(:) = log(1/d);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif variant == 2
@@ -95,6 +96,9 @@ p_acceptance = 0.0;
 % of variables, as well as some ratios used in computing
 % the acceptance probabilitiy.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stationary_distribution_ratio = LogProbOfJointAssignment(F, A_prop) - LogProbOfJointAssignment(F, A);
+p_acceptance = exp(log_QY_ratio + stationary_distribution_ratio + LogR(old_value) - LogR(new_value));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
