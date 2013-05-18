@@ -25,8 +25,17 @@
 
 function [i j] = SmartGetNextClusters(P,Messages,oldMessages,m)
     [messageFromIndx messageToIndx] = find(P.edges);
-    m = mod(m+1,length(messageFromIndx))+1;
-    i = messageFromIndx(m);
-    j = messageToIndx(m);
-end
+    if m < length(messageFromIndx)
+      m = mod(m+1,length(messageFromIndx))+1;
+      i = messageFromIndx(m);
+      j = messageToIndx(m);
+    else
+      delta = arrayfun(@(x,y)(MessageDelta(Messages(x,y), oldMessages(x,y))), messageFromIndx, messageToIndx);
+      [v, p] = max(delta);
+      i = messageFromIndx(p);
+      j = messageToIndx(p);
+    end
 
+function delta = MessageDelta(Mes1, Mes2)
+delta = max(abs(Mes1.val - Mes2.val));
+return;
