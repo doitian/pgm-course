@@ -11,13 +11,17 @@ function EUF = CalculateExpectedUtilityFactor( I )
   % gives the conditional utility given each assignment for D.var
   %
   % Note - We assume I has a single decision node and utility node.
-  EUF = [];
+  % EUF = [];
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % YOUR CODE HERE...
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
+  F = [I.RandomFactors I.UtilityFactors];
 
-  
-end  
+  vars = unique([F.var]);
+  DecisionFactorsVars = unique([I.DecisionFactors.var]);
+
+  EUF = VariableElimination(F, setdiff(vars, DecisionFactorsVars));
+end
