@@ -18,14 +18,20 @@ function EUF = CalculateExpectedUtilityFactor( I )
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
-  F = [I.RandomFactors I.UtilityFactors];
+  EUF = struct("var", [], "card", [], "val", []);
 
-  vars = unique([F.var]);
-  DecisionFactorsVars = unique([I.DecisionFactors.var]);
+  for i = 1:length(I.UtilityFactors)
+    F = [I.RandomFactors I.UtilityFactors(i)];
 
-  muFactors = VariableElimination(F, setdiff(vars, DecisionFactorsVars));
-  EUF = muFactors(1);
-  for i = 2:length(muFactors)
-    EUF = FactorProduct(EUF, muFactors(i));
+    vars = unique([F.var]);
+    DecisionFactorsVars = unique([I.DecisionFactors.var]);
+
+    muFactors = VariableElimination(F, setdiff(vars, DecisionFactorsVars));
+    mu = muFactors(1);
+    for i = 2:length(muFactors)
+      mu = FactorProduct(mu, muFactors(i));
+    end
+
+    EUF = FactorSum(EUF, mu);
   end
 end

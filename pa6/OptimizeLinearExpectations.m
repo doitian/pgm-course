@@ -26,8 +26,7 @@ function [MEU OptimalDecisionRule] = OptimizeLinearExpectations( I )
   % a degenerate case we can handle separately for convenience.
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
 
-
-
+  % already handled by CalculateExpectedUtilityFactor
+  [MEU OptimalDecisionRule] = OptimizeMEU(I);
 end
