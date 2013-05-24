@@ -20,5 +20,12 @@ function [MEU OptimalDecisionRule] = OptimizeWithJointUtility( I )
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  
+  newI = I;
+  F = I.UtilityFactors(1);
+  for i = 2:length(I.UtilityFactors)
+    F = FactorSum(F, I.UtilityFactors(i));
+  end
+  newI.UtilityFactors = [F];
+
+  [MEU OptimalDecisionRule] = OptimizeMEU(newI);
 end
