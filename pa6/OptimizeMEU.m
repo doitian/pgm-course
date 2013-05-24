@@ -13,7 +13,6 @@ function [MEU OptimalDecisionRule] = OptimizeMEU( I )
   % We assume I has a single decision node.
   % You may assume that there is a unique optimal decision.
   D = I.DecisionFactors(1);
-
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % YOUR CODE HERE...
@@ -24,6 +23,26 @@ function [MEU OptimalDecisionRule] = OptimizeMEU( I )
   %     has no parents.
   % 2.  You may find the Matlab/Octave function setdiff useful.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    
 
+  # Map assignment that Decision variable is in the first position
+  EUF = CalculateExpectedUtilityFactor(I);
+
+  map = 1:prod(EUF.card);
+  if length(EUF.var) > 1
+    subs = IndexToAssignment(1:prod(EUF.card), EUF.card);
+    reorderSubs = sortrows(subs, find(EUF.var != D.var(1)));
+    map = AssignmentToIndex(reorderSubs, EUF.card);
+  end
+
+  pos = find(EUF.var == D.var(1));
+  DecisionMatrix = reshape(EUF.val(map), EUF.card(pos), prod(EUF.card) / EUF.card(pos));
+  [Max, Index] = max(DecisionMatrix, [], 1);
+
+  MEU = sum(Max);
+
+  IndexMap = (0:length(Index) - 1) .* EUF.card(pos) + Index;
+
+  OptimalDecisionRule = EUF;
+  OptimalDecisionRule.val(:) = 0;
+  OptimalDecisionRule.val(map(IndexMap)) = 1;
 end
