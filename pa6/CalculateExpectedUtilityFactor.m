@@ -18,18 +18,13 @@ function EUF = CalculateExpectedUtilityFactor( I )
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
-  UniformDecisionFactors = I.DecisionFactors;
-  for i = 1:length(UniformDecisionFactors)
-    UniformDecisionFactors(i).val(:) = 1;
-  end
-
-  F = [I.RandomFactors UniformDecisionFactors I.UtilityFactors];
+  F = [I.RandomFactors I.UtilityFactors];
 
   vars = unique([F.var]);
   DecisionFactorsVars = unique([I.DecisionFactors.var]);
 
   muFactors = VariableElimination(F, setdiff(vars, DecisionFactorsVars));
-  EUF = muFactors(i);
+  EUF = muFactors(1);
   for i = 2:length(muFactors)
     EUF = FactorProduct(EUF, muFactors(i));
   end
