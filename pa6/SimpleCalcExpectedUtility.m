@@ -13,8 +13,8 @@ function EU = SimpleCalcExpectedUtility(I)
   % decision node is fully assigned.
 
   % In this function, we assume there is only one utility node.
-  F = [I.RandomFactors I.DecisionFactors];
-  U = I.UtilityFactors(1);
+  F = [I.RandomFactors I.DecisionFactors I.UtilityFactors];
+
   % EU = [];
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
@@ -22,13 +22,13 @@ function EU = SimpleCalcExpectedUtility(I)
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  X = unique([F.var]);
-  W = setdiff(X, U.var);
+  vars = unique([F.var]);
 
-  D = VariableElimination(F, W);
-  for i = 1:length(D)
-    U = FactorProduct(U, D(i));
+  EUFactors = VariableElimination(F, vars(2:end));
+  F = EUFactors(1);
+  for i = 2:length(EUFactors);
+    F = FactorProduct(F, EUFactors(i));
   end
 
-  EU = sum(U.val);
+  EU = sum(F.val);
 end
