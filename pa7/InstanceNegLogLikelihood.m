@@ -60,6 +60,32 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
     grad = zeros(size(theta));
     %%%
     % Your code here:
-    
+    numFeatures = length(featureSet.features);
 
+    factors = repmat(EmptyFactorStruct(), 1, numFeatures);
+    for i = 1:numFeatures
+      feature = featureSet.features(i);
+      factors(i).var = feature.var;
+      factors(i).card = ones(size(feature.var)) .* modelParams.numHiddenStates;
+      factors(i).val = ones(1, prod(factors(i).card));
+
+      idx = AssignmentToIndex(feature.assignment, factors(i).card);
+      factors(i).val(idx) = exp(theta(feature.paramIdx));
+    end
+
+    CliqueTree = CreateCliqueTree(factors);
+    [CliqueTree, logZ] = CliqueTreeCalibrate(CliqueTree, 0);
+
+    weightedFeatureCounts = zeros(1, length(theta));
+    for i = 1:numFeatures
+      feature = featureSet.features(i);
+      if feature.assignment == y(feature.var)
+        weightedFeatureCounts(feature.paramIdx) += theta(feature.paramIdx);
+      end
+    end
+
+    theta = theta(:);
+    regularization = 0.5 * modelParams.lambda * (theta' * theta);
+
+    nll = logZ - sum(weightedFeatureCounts) + regularization;
 end
