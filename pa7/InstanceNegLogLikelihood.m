@@ -80,11 +80,15 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
       pairFactors(i).val = ones(1, modelParams.numHiddenStates * modelParams.numHiddenStates);
     end
 
+    factorFeatures = {};
+    factorFeatures{numVar + numVar - 1} = [];
+
     for i = 1:length(featureSet.features)
       feature = featureSet.features(i);
       if length(feature.var) == 1
         factorIdx = feature.var(1);
         singletonFactors(factorIdx).val(feature.assignment(1)) *= exp(theta(feature.paramIdx));
+        factorFeatures{factorIdx}(end + 1) = i;
       else
         [sorted, sortedIdx] = sort(feature.var);
         factorIdx = sorted(1);
@@ -96,6 +100,7 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
         valIdx = sub2ind(pairFactors(factorIdx).card, ...
                          assignment(1), assignment(2));
         pairFactors(factorIdx).val(valIdx) *= exp(theta(feature.paramIdx));
+        factorFeatures{numVar + factorIdx}(end + 1) = i;
       end
     end
 
@@ -105,10 +110,13 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
     [CliqueTree, logZ] = CliqueTreeCalibrate(CliqueTree, 0);
 
     weightedFeatureCounts = zeros(1, length(theta));
+    featureCounts = zeros(1, length(theta));
+
     for i = 1:numFeatures
       feature = featureSet.features(i);
       if feature.assignment == y(feature.var)
         weightedFeatureCounts(feature.paramIdx) += theta(feature.paramIdx);
+        featureCounts(feature.paramIdx) += 1;
       end
     end
 
@@ -116,4 +124,31 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
     regularization = 0.5 * modelParams.lambda * (theta' * theta);
 
     nll = logZ - sum(weightedFeatureCounts) + regularization;
+
+    modelFeatureCounts = zeros(1, length(theta));
+
+    for i = 1:length(factors)
+      factor = factors(i);
+      for j = 1:length(CliqueTree.cliqueList)
+        clique = CliqueTree.cliqueList(j);
+        if all(ismember(factor.var, clique.var))
+          eleminateVars = setdiff(clique.var, factor.var);
+          marginal = FactorMarginalization(clique, eleminateVars);
+          marginal.val /= sum(marginal.val);
+
+          for k = 1:length(factorFeatures{i})
+            featureIdx = factorFeatures{i}(k);
+            feature = featureSet.features(featureIdx);
+            [~,sortedIdx] = sort(feature.var);
+            assignment = feature.assignment(sortedIdx);
+            idx = AssignmentToIndex(assignment, marginal.card);
+            modelFeatureCounts(feature.paramIdx) += marginal.val(idx);
+          end
+
+          break;
+        end
+      end
+    end
+
+    grad = modelFeatureCounts - featureCounts + modelParams.lambda * theta';
 end
