@@ -60,18 +60,46 @@ function [nll, grad] = InstanceNegLogLikelihood(X, y, theta, modelParams)
     grad = zeros(size(theta));
     %%%
     % Your code here:
+
     numFeatures = length(featureSet.features);
+    numVar = size(X, 1);
 
-    factors = repmat(EmptyFactorStruct(), 1, numFeatures);
-    for i = 1:numFeatures
-      feature = featureSet.features(i);
-      factors(i).var = feature.var;
-      factors(i).card = ones(size(feature.var)) .* modelParams.numHiddenStates;
-      factors(i).val = ones(1, prod(factors(i).card));
-
-      idx = AssignmentToIndex(feature.assignment, factors(i).card);
-      factors(i).val(idx) = exp(theta(feature.paramIdx));
+    # - singleton factor first 1:M
+    singletonFactors = repmat(EmptyFactorStruct(), 1, numVar);
+    for i = 1:numVar
+      singletonFactors(i).var = [i];
+      singletonFactors(i).card = [modelParams.numHiddenStates];
+      singletonFactors(i).val = ones(1, modelParams.numHiddenStates);
     end
+
+    # - then pair factor: (1,2), (2,3), ..., (M-1, M)
+    pairFactors = repmat(EmptyFactorStruct(), 1, numVar - 1);
+    for i = 1:(numVar - 1)
+      pairFactors(i).var = [i, i + 1];
+      pairFactors(i).card = [modelParams.numHiddenStates, modelParams.numHiddenStates];
+      pairFactors(i).val = ones(1, modelParams.numHiddenStates * modelParams.numHiddenStates);
+    end
+
+    for i = 1:length(featureSet.features)
+      feature = featureSet.features(i);
+      if length(feature.var) == 1
+        factorIdx = feature.var(1);
+        singletonFactors(factorIdx).val(feature.assignment(1)) *= exp(theta(feature.paramIdx));
+      else
+        [sorted, sortedIdx] = sort(feature.var);
+        factorIdx = sorted(1);
+        assignment = feature.assignment(sortedIdx);
+
+        assert(length(feature.var), 2)
+        assert(sorted(2) - sorted(1), 1)
+
+        valIdx = sub2ind(pairFactors(factorIdx).card, ...
+                         assignment(1), assignment(2));
+        pairFactors(factorIdx).val(valIdx) *= exp(theta(feature.paramIdx));
+      end
+    end
+
+    factors = [singletonFactors, pairFactors];
 
     CliqueTree = CreateCliqueTree(factors);
     [CliqueTree, logZ] = CliqueTreeCalibrate(CliqueTree, 0);
