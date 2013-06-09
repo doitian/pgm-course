@@ -17,11 +17,15 @@ end
 
 % estimate graph structure for each class
 for k=1:K
+    subDatasetIndex = find(labels(:, k));
+    subDataset = dataset(subDatasetIndex, :, :);
     % fill in G(:,:,k)
     % use ConvertAtoG to convert a maximum spanning tree to a graph G
     %%%%%%%%%%%%%%%%%%%%%%%%%
     % YOUR CODE HERE
     %%%%%%%%%%%%%%%%%%%%%%%%%
+    A = LearnGraphStructure(subDataset);
+    G(:, :, k) = ConvertAtoG(A);
 end
 
 % estimate parameters
@@ -34,5 +38,7 @@ P.c = zeros(1,K);
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[P, loglikelihood] = LearnCPDsGivenGraph(dataset, G, labels);
 
 fprintf('log likelihood: %f\n', loglikelihood);
