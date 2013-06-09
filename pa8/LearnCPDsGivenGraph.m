@@ -27,5 +27,34 @@ P.c = zeros(1,K);
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf('log likelihood: %f\n', loglikelihood);
+if ndims(G) == 2
+  G = repmat(G, [1, 1, K]);
+end
 
+numParts = size(G, 1);
+P.c = mean(labels);
+P.clg = repmat(struct(), 1, numParts);
+
+for p = 1:numParts
+  for k = 1:K
+    exampleIndex = find(labels(:, k));
+    classDataset = squeeze(dataset(exampleIndex, p, :));
+
+    if G(p, 1, k) == 0 # Gaussian
+      [P.clg(p).mu_y(k), P.clg(p).sigma_y(k)] = FitGaussianParameters(classDataset(:, 1));
+      [P.clg(p).mu_x(k), P.clg(p).sigma_x(k)] = FitGaussianParameters(classDataset(:, 2));
+      [P.clg(p).mu_angle(k), P.clg(p).sigma_angle(k)] = FitGaussianParameters(classDataset(:, 3));
+    else # CLG
+      parent = squeeze(dataset(exampleIndex, G(p, 2, k), :));
+
+      [Beta1, P.clg(p).sigma_y(k)] = FitLinearGaussianParameters(classDataset(:, 1), parent);
+      [Beta2, P.clg(p).sigma_x(k)] = FitLinearGaussianParameters(classDataset(:, 2), parent);
+      [Beta3, P.clg(p).sigma_angle(k)] = FitLinearGaussianParameters(classDataset(:, 3), parent);
+
+      P.clg(p).theta(k, :) = [Beta1(end), Beta1(1:3)', Beta2(end), Beta2(1:3)', Beta3(end), Beta3(1:3)'];
+    end
+  end
+end
+
+loglikelihood = ComputeLogLikelihood(P, G, dataset);
+fprintf('log likelihood: %f\n', loglikelihood);

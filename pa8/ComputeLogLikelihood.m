@@ -30,7 +30,7 @@ loglikelihood = 0;
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if length(size(G)) == 2
+if ndims(G) == 2
   G = repmat(G, [1, 1, K]);
 end
 
