@@ -28,6 +28,9 @@ sigma = 1;
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+A = [ones(M, 1), U]' * U;
+A ./= M;
+A = [A, [1, A(1, :)]'];
 
 % B = [ E[X]; E[X*U(1)]; ... ; E[X*U(n)] ]
 
@@ -36,12 +39,27 @@ sigma = 1;
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+B = [ones(M, 1), U]' * X;
+B ./= M;
+
 % solve A*Beta = B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Beta = A \ B;
+
 % then compute sigma according to eq. (11) in PA description
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % YOUR CODE HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+CovXX = mean(X .* X) - B(1) * B(1);
+
+Beta1N = Beta(1:N);
+EUU = A(2:end, 1:N);
+EU = A(1, 1:N);
+
+SumCovUU = sum(sum((Beta1N * Beta1N') .* (EUU .- (EU' * EU))));
+
+sigma = sqrt(CovXX - SumCovUU);
