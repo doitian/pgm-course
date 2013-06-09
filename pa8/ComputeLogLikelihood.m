@@ -36,32 +36,32 @@ end
 
 numParts = size(G, 1);
 
+sigma = permute(reshape([P.clg.sigma_y, P.clg.sigma_x, P.clg.sigma_angle], 2, 10, 3), [2, 3, 1]);
+
+# Only parts only having class variable as parent have predefined mu. Other
+# parts must calculate based on there parent parts.
+mu = zeros(size(sigma));
+[I, J] = find(~squeeze(G(:, 1, :)));
+for u = 1:length(I)
+  mu(I(u), 1, J(u)) = P.clg(I(u)).mu_y(J(u));
+  mu(I(u), 2, J(u)) = P.clg(I(u)).mu_x(J(u));
+  mu(I(u), 3, J(u)) = P.clg(I(u)).mu_angle(J(u));
+end
+
+[I, J] = find(squeeze(G(:, 1, :)));
+
 for i = 1:N
-  exampleP = 0;
-  example = squeeze(dataset(i, :, :));
+  example = repmat(squeeze(dataset(i, :, :)), [1, 1, K]);
 
-  for k = 1:K
-    logP = 0;
-
-    for o = 1:numParts;
-      O = example(o, :);
-      clg = P.clg(o);
-
-      if G(o, 1, k) == 0
-        logP += lognormpdf(O(1), clg.mu_y(k), clg.sigma_y(k));
-        logP += lognormpdf(O(2), clg.mu_x(k), clg.sigma_x(k));
-        logP += lognormpdf(O(3), clg.mu_angle(k), clg.sigma_angle(k));
-      else
-        parent = [1, example(G(o, 2, k), :)];
-        theta = reshape(clg.theta(k, :), 4, 3);
-        logP += lognormpdf(O(1), parent * theta(:, 1), clg.sigma_y(k));
-        logP += lognormpdf(O(2), parent * theta(:, 2), clg.sigma_x(k));
-        logP += lognormpdf(O(3), parent * theta(:, 3), clg.sigma_angle(k));
-      end
-    end
-
-    exampleP += P.c(k) * exp(logP);
+  for u = 1:length(I)
+    theta = reshape(P.clg(I(u)).theta(J(u), :), 4, 3);
+    parentIndex = G(I(u), 2, J(u));
+    parent = example(parentIndex, :, J(u));
+    mu(I(u), :, J(u)) = [1, parent] * theta;
   end
 
-  loglikelihood += log(exampleP);
+  logP = arrayfun(@lognormpdf, example, mu, sigma);
+  logP = squeeze(sum(sum(logP, 1), 2));
+
+  loglikelihood += log(P.c * exp(logP));
 end
