@@ -50,7 +50,25 @@ for iter=1:maxIter
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % YOUR CODE HERE
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+  P.c = mean(ClassProb);
+  for p = 1:size(G, 1)
+    for k = 1:K
+      weights = ClassProb(:, k);
+      if G(p, 1) == 0 # Gaussian
+        [P.clg(p).mu_y(k), P.clg(p).sigma_y(k)] = FitG(poseData(:, p, 1), weights);
+        [P.clg(p).mu_x(k), P.clg(p).sigma_x(k)] = FitG(poseData(:, p, 2), weights);
+        [P.clg(p).mu_angle(k), P.clg(p).sigma_angle(k)] = FitG(poseData(:, p, 3), weights);
+      else # CLG
+        parent = squeeze(poseData(:, G(p, 2), :));
+        [Beta1, P.clg(p).sigma_y(k)] = FitLG(poseData(:, p, 1), parent, weights);
+        [Beta2, P.clg(p).sigma_x(k)] = FitLG(poseData(:, p, 2), parent, weights);
+        [Beta3, P.clg(p).sigma_angle(k)] = FitLG(poseData(:, p, 3), parent, weights);
+
+        P.clg(p).theta(k, :) = [Beta1(end), Beta1(1:3)', Beta2(end), Beta2(1:3)', Beta3(end), Beta3(1:3)'];
+      end
+    end
+  end
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % E-STEP to re-estimate ClassProb using the new parameters
@@ -74,16 +92,52 @@ for iter=1:maxIter
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % YOUR CODE HERE
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
+  sigma = permute(reshape([P.clg.sigma_y, P.clg.sigma_x, P.clg.sigma_angle], K, size(G, 1), 3), [2, 3, 1]);
+  mu = zeros(size(sigma));
+  for p = find(~G(:, 1))'
+    mu(p, 1, :) = P.clg(p).mu_y;
+    mu(p, 2, :) = P.clg(p).mu_x;
+    mu(p, 3, :) = P.clg(p).mu_angle;
+  end
+
+  partsWithParent = find(G(:, 1));
+
+  loglikelihood(iter) = 0;
+
+  for i = 1:N
+    example = repmat(squeeze(poseData(i, :, :)), [1, 1, K]);
+
+    for p = partsWithParent'
+      for k = 1:K
+        theta = reshape(P.clg(p).theta(k, :), 4, 3);
+        parentIndex = G(p, 2);
+        parent = example(parentIndex, :, k);
+        mu(p, :, k) = [1, parent] * theta;
+      end
+    end
+
+    logP = arrayfun(@lognormpdf, example, mu, sigma);
+    logP = squeeze(sum(sum(logP, 1), 2));
+
+    ClassProb(i, :) = logP' + log(P.c);
+  end
+
+  # Convert from log space
+  sumClassProb = logsumexp(ClassProb);
+  ClassProb = exp(ClassProb - repmat(sumClassProb, 1, K));
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % Compute log likelihood of dataset for this iteration
   % Hint: You should use the logsumexp() function here
-  loglikelihood(iter) = 0;
+  % loglikelihood(iter) = 0;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % YOUR CODE HERE
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
+  loglikelihood(iter) = sum(sumClassProb');
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % Print out loglikelihood
