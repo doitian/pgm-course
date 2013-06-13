@@ -105,6 +105,8 @@ for ka = 1:numActionTypes
 end
 
 [~, predicted_labels] = max(loglikelihoods, [], 2);
-accuracy = mean(double(datasetTest.labels == predicted_labels));
+if isfield(datasetTest, 'labels')
+  accuracy = mean(double(datasetTest.labels == predicted_labels));
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

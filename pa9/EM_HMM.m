@@ -93,8 +93,8 @@ for iter=1:maxIter
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % YOUR CODE HERE
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  P.transMatrix += reshape(sum(PairProb), 3, 3);
-  P.transMatrix ./= repmat(sum(P.transMatrix, 2), 1, 3);
+  P.transMatrix += reshape(sum(PairProb), K, K);
+  P.transMatrix ./= repmat(sum(P.transMatrix, 2), 1, K);
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
@@ -124,7 +124,7 @@ for iter=1:maxIter
 
     for p = partsWithParent'
       for k = 1:K
-         theta = reshape(P.clg(p).theta(k, :), 4, 3);
+        theta = reshape(P.clg(p).theta(k, :), 4, 3);
         parentIndex = G(p, 2);
         parent = example(parentIndex, :, k);
         mu(p, :, k) = [1, parent] * theta;
