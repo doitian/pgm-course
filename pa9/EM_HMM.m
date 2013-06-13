@@ -64,7 +64,7 @@ for iter=1:maxIter
 
   for p = 1:size(G, 1)
     for k = 1:K
-      weights = ClassProb(:, k);
+      weights = 100 * ClassProb(:, k);
       if G(p, 1) == 0 # Gaussian
         [P.clg(p).mu_y(k), P.clg(p).sigma_y(k)] = FitG(poseData(:, p, 1), weights);
         [P.clg(p).mu_x(k), P.clg(p).sigma_x(k)] = FitG(poseData(:, p, 2), weights);

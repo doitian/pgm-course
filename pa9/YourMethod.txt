@@ -1,2 +1,2 @@
 - Split datasetTrain3 into training set and cross validation set
-- Use KMean to initialize InitialClassProb and InitialPairProb
+- Use FuzzyKMean to initialize InitialClassProb and InitialPairProb
